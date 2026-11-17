@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台灣大富翁 v3.5</title>
+    <title>台灣大富翁3D v6.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- XLSX library for reading Excel files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -509,6 +509,8 @@
         #ai-generate-quiz-btn,
         #ai-generate-cards-btn,
         #ai-cancel-btn,
+        #ai-edit-cards-btn,
+        #ai-save-progress-btn,
         #buy-btn,
         #skip-buy-btn,
         #card-ok-btn,
@@ -548,6 +550,8 @@
         #ai-generate-quiz-btn:hover,
         #ai-generate-cards-btn:hover,
         #ai-cancel-btn:hover,
+        #ai-edit-cards-btn:hover,
+        #ai-save-progress-btn:hover,
         #buy-btn:hover,
         #skip-buy-btn:hover,
         #card-ok-btn:hover,
@@ -609,6 +613,7 @@
 
         #open-edit-cards-btn,
         #ai-generate-cards-btn,
+        #ai-edit-cards-btn,
         #save-cards-btn,
         #add-new-card-btn {
             background: linear-gradient(135deg, var(--macaron-peach-deep), var(--macaron-peach)) !important;
@@ -638,6 +643,7 @@
 
         #buy-btn,
         #confirm-yes-btn,
+        #ai-save-progress-btn,
         #play-again-btn {
             background: linear-gradient(135deg, var(--macaron-mint-deep), var(--macaron-mint)) !important;
             color: #235c47 !important;
@@ -726,43 +732,150 @@
             border-radius: 24px !important;
         }
 
-        /* --- AI 設計彈窗內部分區重新配色 (馬卡龍) --- */
-        #ai-design-modal .bg-blue-50 {
-            background: linear-gradient(160deg, var(--macaron-blue), #f4fbff) !important;
-            border-color: var(--macaron-blue-deep) !important;
-        }
-
-        #ai-design-modal .text-blue-700 {
-            color: #1c4c73 !important;
-        }
-
-        #ai-design-modal .bg-purple-50 {
-            background: linear-gradient(160deg, var(--macaron-lavender), #faf6ff) !important;
-            border-color: var(--macaron-lavender-deep) !important;
-        }
-
-        #ai-design-modal .text-purple-700 {
-            color: #4b2e7a !important;
-        }
-
-        #ai-design-modal .bg-orange-50 {
-            background: linear-gradient(160deg, var(--macaron-peach), #fff8f2) !important;
-            border-color: var(--macaron-peach-deep) !important;
-        }
-
-        #ai-design-modal .text-orange-700 {
-            color: #7a3d12 !important;
-        }
-
-        #ai-design-modal .bg-gray-50 {
-            background: linear-gradient(160deg, #f1eef8, #fdfcff) !important;
-            border-color: #c9c3d9 !important;
-        }
-
+        /* --- AI 設計遊戲區圖層：沿用設定畫面「遊戲設定」面板的風格 --- */
         #ai-design-modal {
-            background: linear-gradient(165deg, #ffffff, #fdf6ff) !important;
-            max-height: 90vh;
-            overflow-y: auto;
+            max-width: 1120px;
+            padding: 24px 24px 20px;
+            border: 3px solid #ffffff;
+            border-radius: 28px !important;
+            background: linear-gradient(170deg, rgba(255, 255, 255, 0.97), rgba(250, 245, 255, 0.97));
+            box-shadow: 0 0 0 4px rgba(180, 140, 255, 0.55), 0 30px 60px -20px rgba(60, 30, 110, 0.6);
+            color: var(--macaron-ink);
+            text-align: left;
+        }
+
+        #ai-design-modal .aid-head { text-align: center; margin-bottom: 14px; }
+
+        #ai-design-modal .aid-title {
+            display: inline-block;
+            margin: 0;
+            padding: 6px 26px;
+            border: 3px solid #ffffff;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #b48cff, #8fb8ff);
+            color: #ffffff;
+            font-size: 1.35rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            box-shadow: 0 4px 0 #8a64e0, 0 10px 18px -6px rgba(70, 30, 120, 0.5);
+        }
+
+        #ai-design-modal .aid-lead { margin: 10px 0 0; color: var(--macaron-ink-soft); font-size: 0.92rem; font-weight: 700; }
+
+        /* AI 模型列（三個生成功能共用） */
+        #ai-design-modal .aid-model {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 12px;
+            margin-bottom: 16px;
+            padding: 10px 14px;
+            border: 2px dashed var(--macaron-lavender-deep);
+            border-radius: 18px;
+            background: #f8f3ff;
+        }
+
+        #ai-design-modal .aid-model > label { font-weight: 900; white-space: nowrap; }
+        #ai-design-modal .aid-model > select { flex: 1 1 220px; width: auto; }
+        #ai-design-modal .aid-model-extra:not(.hidden) { display: flex; flex: 1 1 100%; flex-wrap: wrap; align-items: center; gap: 8px; }
+        #ai-design-modal .aid-model-extra label { font-size: 0.85rem; font-weight: 800; white-space: nowrap; }
+        #ai-design-modal .aid-model-extra input { flex: 1 1 220px; width: auto; }
+        #ai-design-modal .aid-model-extra p { flex-basis: 100%; margin: 0; }
+
+        /* 三張功能卡 */
+        #ai-design-modal .aid-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+        #ai-design-modal .aid-card {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            padding: 16px;
+            border-top: 6px solid var(--c);
+            border-radius: 22px;
+            background: linear-gradient(180deg, var(--c-soft) 0, #ffffff 90px);
+            box-shadow: 0 0 0 2px var(--c-soft), 0 12px 26px -14px rgba(80, 50, 120, 0.45);
+        }
+
+        #ai-design-modal .aid-board { --c: var(--macaron-blue-deep); --c-soft: var(--macaron-blue); --c-ink: #1c4c73; }
+        #ai-design-modal .aid-quiz { --c: var(--macaron-lavender-deep); --c-soft: var(--macaron-lavender); --c-ink: #4b2e7a; }
+        #ai-design-modal .aid-cards { --c: var(--macaron-peach-deep); --c-soft: var(--macaron-peach); --c-ink: #7a3d12; }
+
+        #ai-design-modal .aid-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+
+        #ai-design-modal .aid-icon {
+            display: grid;
+            place-items: center;
+            flex: none;
+            width: 46px;
+            height: 46px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            background: var(--c);
+            font-size: 1.4rem;
+            box-shadow: 0 4px 10px -4px rgba(80, 50, 120, 0.45);
+        }
+
+        #ai-design-modal .aid-step { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.12em; color: var(--c-ink); opacity: 0.75; }
+        #ai-design-modal .aid-card h4 { margin: 0; font-size: 1.15rem; font-weight: 900; color: var(--c-ink); }
+        #ai-design-modal .aid-label { margin: 0; font-size: 0.8rem; font-weight: 800; color: var(--macaron-ink-soft); }
+
+        #ai-design-modal input[type="text"],
+        #ai-design-modal input[type="password"],
+        #ai-design-modal select,
+        #ai-design-modal textarea {
+            width: 100%;
+            padding: 9px 12px;
+            border: 2px solid var(--macaron-lavender);
+            border-radius: 12px;
+            background: #fffdf9;
+            color: var(--macaron-ink);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #ai-design-modal textarea { height: 86px; resize: vertical; }
+
+        #ai-design-modal input:focus,
+        #ai-design-modal select:focus,
+        #ai-design-modal textarea:focus {
+            outline: none;
+            border-color: var(--macaron-lavender-deep);
+            box-shadow: 0 0 0 3px rgba(198, 166, 255, 0.35);
+        }
+
+        #ai-design-modal button:not(.edit-quiz-bank-btn) {
+            padding: 10px 16px;
+            border-radius: 999px !important;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+        }
+
+        #ai-design-modal .aid-card > button { width: 100%; }
+        #ai-design-modal #ai-quiz-bank-list label { flex: 1; }
+        #ai-design-modal #ollama-load-models-btn { padding: 8px 16px; }
+
+        #ai-design-modal .aid-loading { margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--c-ink); text-align: center; animation: aid-blink 1.2s ease-in-out infinite; }
+        @keyframes aid-blink { 50% { opacity: 0.45; } }
+
+        #ai-design-modal .aid-banks {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 2px;
+            padding: 10px 12px;
+            border: 2px dashed var(--macaron-lavender-deep);
+            border-radius: 14px;
+            background: #fbf8ff;
+        }
+
+        #ai-design-modal #ai-quiz-bank-list { max-height: 150px; overflow-y: auto; font-size: 0.9rem; }
+
+        /* 底部按鈕 */
+        #ai-design-modal .aid-foot { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 18px; }
+        #ai-design-modal .aid-foot button { padding: 12px 16px; font-size: 1.05rem; }
+
+        @media (max-width: 600px) {
+            #ai-design-modal { padding: 18px 14px 16px; }
+            #ai-design-modal .aid-foot { grid-template-columns: 1fr; }
         }
 
         /* --- 右下角浮動 AI 提示 Toast --- */
@@ -1205,6 +1318,12 @@
         #how-to-play-modal .close-btn:hover {
             background-color: #dc2626;
         }
+
+        #rules-form { display: grid; gap: 6px; margin-bottom: 1rem; }
+        #rules-form label { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(255, 255, 255, 0.7); border-radius: 10px; padding: 6px 10px; color: #37474f; font-size: 0.95rem; }
+        #rules-form input { width: 86px; padding: 4px 6px; border: 2px solid var(--macaron-blue-deep); border-radius: 8px; text-align: right; font-weight: bold; }
+        #rules-form small { display: inline-block; width: 120px; color: #78909c; white-space: nowrap; }
+        #rules-reset-btn { background: #fff; border: 2px solid var(--macaron-blue-deep); border-radius: 999px; padding: 6px 18px; font-weight: bold; color: #1a237e; cursor: pointer; }
 
         /* 題庫 XLSX 格式說明 Modal */
         #quiz-format-help-modal {
@@ -3577,6 +3696,30 @@
             border: 3px solid rgba(255, 255, 255, 0.95) !important;
         }
 
+        /* 再來一局設定視窗（沿用「遊戲設定」面板風格） */
+        #restart-settings-modal {
+            max-width: 400px;
+            padding: 22px 22px 18px;
+            border: 3px solid #ffffff;
+            border-radius: 28px !important;
+            background: linear-gradient(170deg, #ffffff, #faf5ff);
+            box-shadow: 0 0 0 4px rgba(180, 140, 255, 0.55), 0 30px 60px -20px rgba(60, 30, 110, 0.6);
+            color: var(--macaron-ink);
+            text-align: center;
+        }
+        #restart-settings-modal .rs-title { display: inline-block; margin: 0; padding: 5px 24px; border: 3px solid #ffffff; border-radius: 999px; background: linear-gradient(135deg, var(--macaron-mint-deep), #8fcdff); color: #ffffff; font-size: 1.25rem; font-weight: 900; letter-spacing: 0.08em; box-shadow: 0 4px 0 #3fae86, 0 10px 18px -6px rgba(40, 110, 90, 0.45); }
+        #restart-settings-modal .rs-lead { margin: 10px 0 14px; font-size: 0.85rem; font-weight: 700; color: var(--macaron-ink-soft); }
+        #restart-settings-modal .rs-field { display: block; margin-bottom: 10px; text-align: left; font-size: 0.85rem; font-weight: 800; }
+        #restart-settings-modal select,
+        #restart-settings-modal input { display: block; width: 100%; margin-top: 4px; padding: 9px 12px; border: 2px solid var(--macaron-lavender); border-radius: 12px; background: #fffdf9; color: var(--macaron-ink); font-weight: 700; }
+        #restart-settings-modal select:focus,
+        #restart-settings-modal input:focus { outline: none; border-color: var(--macaron-lavender-deep); box-shadow: 0 0 0 3px rgba(198, 166, 255, 0.35); }
+        #restart-settings-modal .rs-warn { margin: 4px 0 12px; font-size: 0.8rem; font-weight: 700; color: #d94f80; }
+        #restart-settings-modal .rs-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+        #restart-settings-modal .rs-actions button { padding: 11px 14px; border: none; border-radius: 999px; font-weight: 900; box-shadow: 0 6px 14px -4px rgba(120, 90, 150, 0.35); cursor: pointer; }
+        #rs-start-btn { background: linear-gradient(135deg, var(--macaron-mint-deep), var(--macaron-mint)); color: #235c47; }
+        #rs-cancel-btn { background: linear-gradient(135deg, #c9c3d9, #ece7f5); color: #4b4460; }
+
         /* ===== 全畫面遊戲：收起右上 / 左下按鈕區，只留展開把手 ===== */
         #tools-toggle-btn,
         #controls-toggle-btn {
@@ -3675,7 +3818,7 @@
         <div class="ts-wrap">
             <!-- 左：遊戲標誌與主要按鈕 -->
             <section class="ts-hero">
-                <p class="setup-version-badge">V5.0 ・ 更新日期 2026-09-18</p>
+                <p class="setup-version-badge">V6.1 ・ 更新日期 2026-11-17</p>
                 <div class="ts-logo-art" aria-hidden="true"><span>🏝️</span><span>🎲</span><span>💰</span></div>
                 <h1 class="setup-title"><small>寶島</small>大富翁</h1>
                 <p class="ts-ribbon">環島致富之旅</p>
@@ -3852,7 +3995,7 @@
                 <button id="import-game-btn">載入進度</button>
             </div>
             <div class="game-controls-top-right" id="game-controls-top-right">
-                <button id="restart-game-btn" title="保留目前的地圖、題庫、機會/命運卡、玩家、起始資金與遊戲時間，重新開一局">🔁 再來一局</button>
+                <button id="restart-game-btn" title="保留目前的地圖、題庫、機會/命運卡，可調整玩家人數、初始資金與遊戲時間後重新開一局">🔁 再來一局</button>
                 <button id="end-game-btn">結束遊戲</button>
                 <button id="reset-game-btn">重置遊戲</button>
             </div>
@@ -3897,7 +4040,7 @@
             <button id="play-again-btn"
                 class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 text-lg">重新開始一局</button>
             <button id="restart-same-btn"
-                class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 text-lg mt-3">🔁 用相同設定再玩一局</button>
+                class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 text-lg mt-3">🔁 再來一局（可調整人數、資金、時間）</button>
         </div>
         <div id="confirm-modal" class="bg-white rounded-lg shadow-2xl p-6 w-11/12 max-w-sm text-center hidden">
             <p id="confirm-text" class="text-lg text-gray-700 mb-6"></p>
@@ -3906,6 +4049,30 @@
                     class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg">確定</button>
                 <button id="confirm-no-btn"
                     class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">取消</button>
+            </div>
+        </div>
+
+        <!-- 再來一局：可調整玩家人數、初始資金、遊戲時間 -->
+        <div id="restart-settings-modal" class="w-11/12 hidden">
+            <p class="rs-title">🔁 再來一局</p>
+            <p class="rs-lead">地圖、題庫、機會 / 命運卡沿用；土地、房屋與金錢全部歸零。</p>
+            <label class="rs-field">玩家人數
+                <select id="rs-player-count">
+                    <option value="2">2 人</option>
+                    <option value="3">3 人</option>
+                    <option value="4">4 人</option>
+                </select>
+            </label>
+            <label class="rs-field">初始資金（$）
+                <input type="number" id="rs-initial-money" min="1" step="1000">
+            </label>
+            <label class="rs-field">遊戲時間（分鐘，0＝不計時）
+                <input type="number" id="rs-game-minutes" min="0" step="5">
+            </label>
+            <p class="rs-warn">⚠️ 目前這局的進度將會遺失</p>
+            <div class="rs-actions">
+                <button id="rs-start-btn">▶ 開始新的一局</button>
+                <button id="rs-cancel-btn">取消</button>
             </div>
         </div>
 
@@ -3929,91 +4096,86 @@
         <!-- End Quiz Modal -->
 
         <!-- AI Design Modal -->
-        <div id="ai-design-modal" class="bg-white rounded-lg shadow-2xl p-6 w-11/12 max-w-5xl text-center hidden">
-            <h3 class="text-2xl font-bold mb-4">AI 設計遊戲區</h3>
+        <div id="ai-design-modal" class="w-11/12 hidden">
+            <div class="aid-head">
+                <p class="aid-title">✨ AI 設計遊戲區</p>
+                <p class="aid-lead">輸入主題，讓 AI 幫你生成專屬的地圖、題庫和機會 / 命運卡片</p>
+            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- AI Board Design Section -->
-                <div class="mb-4 md:mb-0 p-4 border rounded-lg bg-blue-50 border-blue-200 shadow-sm">
-                    <h4 class="text-xl font-bold text-blue-700 mb-3">AI 地圖設計</h4>
-                    <p class="text-gray-700 mb-4">請輸入遊戲區的主題：</p>
-                    <input type="text" id="ai-theme-input"
-                        class="shadow border rounded w-full py-2 px-3 text-gray-700 mb-3"
-                        placeholder="例如：任天堂遊戲, 台灣美食, 太空探索">
-                    <button id="ai-generate-board-btn"
-                        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">生成地圖</button>
-                    <p id="ai-board-loading-message" class="text-blue-500 mt-2 hidden">AI 正在設計地圖，請稍候...</p>
-                    <!-- 生成後顯示手動修改按鈕 -->
-                    <button id="ai-edit-board-btn"
-                        class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 mt-2 hidden">🗺️
-                        手動修改地圖</button>
+            <!-- AI 模型選擇（三個生成功能共用） -->
+            <div class="aid-model">
+                <label for="ai-model-select">🤖 AI 模型</label>
+                <select id="ai-model-select">
+                    <option value="gemini-current-account" selected>目前帳號的 Gemini (預設)</option>
+                    <option value="gemini-api-key">Gemini API Key</option>
+                    <option value="ollama-local">本地 Ollama 模型</option>
+                </select>
+                <div id="gemini-api-key-input-group" class="aid-model-extra hidden">
+                    <label for="gemini-api-key-input">Gemini API Key</label>
+                    <input type="password" id="gemini-api-key-input" placeholder="貼上您的 Gemini API Key">
                 </div>
-
-                <!-- AI Quiz Generation Section -->
-                <div class="mb-4 md:mb-0 p-4 border rounded-lg bg-purple-50 border-purple-200 shadow-sm">
-                    <h4 class="text-xl font-bold text-purple-700 mb-3">AI 題庫生成</h4>
-                    <p class="text-gray-700 mb-4">請輸入題庫需求 (主題、題數、標題)：</p>
-                    <textarea id="ai-quiz-prompt-input"
-                        class="shadow border rounded w-full py-2 px-3 text-gray-700 h-24 mb-3"
-                        placeholder="例如：主題：台灣歷史，題數：10題，標題：台灣歷史小測驗"></textarea>
-                    <button id="ai-generate-quiz-btn"
-                        class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">生成題庫</button>
-                    <p id="ai-quiz-loading-message" class="text-purple-500 mt-2 hidden">AI 正在生成題庫，請稍候...</p>
-                </div>
-
-                <!-- AI 機會/命運卡片生成 -->
-                <div class="mb-4 md:mb-0 p-4 border rounded-lg bg-orange-50 border-orange-200 shadow-sm">
-                    <h4 class="text-xl font-bold text-orange-700 mb-3">AI 機會 / 命運卡片</h4>
-                    <p class="text-gray-700 mb-2">依地圖主題自動生成卡片：</p>
-                    <input type="text" id="ai-cards-theme-input"
-                        class="shadow border rounded w-full py-2 px-3 text-gray-700 mb-3" placeholder="留空則沿用地圖主題">
-                    <div class="flex gap-2">
-                        <button id="ai-generate-cards-btn"
-                            class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">生成卡片</button>
-                    </div>
-                    <p id="ai-cards-loading-message" class="text-orange-500 mt-2 hidden">AI 正在生成卡片，請稍候...</p>
-                </div>
-
-                <!-- AI Model Selection (Common for all) -->
-                <div class="p-4 border rounded-lg bg-gray-50 border-gray-200 shadow-sm">
-                    <h4 class="text-xl font-bold text-gray-700 mb-3">AI 模型選擇</h4>
-                    <div class="mb-4 text-left">
-                        <label for="ai-model-select" class="block text-gray-700 text-sm font-bold mb-2">選擇 AI
-                            模型:</label>
-                        <select id="ai-model-select"
-                            class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            <option value="gemini-current-account" selected>目前帳號的 Gemini (預設)</option>
-                            <option value="gemini-api-key">Gemini API Key</option>
-                            <option value="ollama-local">本地 Ollama 模型</option>
-                        </select>
-                    </div>
-                    <div id="gemini-api-key-input-group" class="mb-4 text-left hidden">
-                        <label for="gemini-api-key-input" class="block text-gray-700 text-sm font-bold mb-2">Gemini API
-                            Key:</label>
-                        <input type="password" id="gemini-api-key-input"
-                            class="shadow border rounded w-full py-2 px-3 text-gray-700"
-                            placeholder="貼上您的 Gemini API Key">
-                    </div>
-                    <div id="ollama-url-input-group" class="mb-4 text-left hidden">
-                        <label for="ollama-url-input" class="block text-gray-700 text-sm font-bold mb-2">Ollama URL (例如:
-                            http://localhost:11434):</label>
-                        <input type="text" id="ollama-url-input"
-                            class="shadow border rounded w-full py-2 px-3 text-gray-700 mb-2"
-                            placeholder="貼上您的 Ollama URL">
-                        <button id="ollama-load-models-btn"
-                            class="w-full bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300">載入
-                            Ollama 模型</button>
-                        <select id="ollama-model-select"
-                            class="shadow border rounded w-full py-2 px-3 text-gray-700 mt-2 hidden">
-                            <option value="">請選擇一個模型</option>
-                        </select>
-                        <p id="ollama-status-message" class="text-sm mt-2 hidden"></p>
-                    </div>
+                <div id="ollama-url-input-group" class="aid-model-extra hidden">
+                    <label for="ollama-url-input">Ollama URL</label>
+                    <input type="text" id="ollama-url-input" placeholder="例如：http://localhost:11434">
+                    <button id="ollama-load-models-btn">載入 Ollama 模型</button>
+                    <select id="ollama-model-select" class="hidden">
+                        <option value="">請選擇一個模型</option>
+                    </select>
+                    <p id="ollama-status-message" class="text-sm hidden"></p>
                 </div>
             </div>
 
-            <button id="ai-cancel-btn"
-                class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition duration-300 mt-4">取消</button>
+            <div class="aid-grid">
+                <!-- STEP 1：地圖 -->
+                <section class="aid-card aid-board">
+                    <div class="aid-card-head">
+                        <span class="aid-icon">🗺️</span>
+                        <div><span class="aid-step">STEP 1</span><h4>AI 地圖設計</h4></div>
+                    </div>
+                    <label class="aid-label" for="ai-theme-input">遊戲區的主題</label>
+                    <input type="text" id="ai-theme-input" placeholder="例如：任天堂遊戲, 台灣美食, 太空探索">
+                    <button id="ai-generate-board-btn">✨ 生成地圖</button>
+                    <p id="ai-board-loading-message" class="aid-loading hidden">AI 正在設計地圖，請稍候...</p>
+                    <!-- 生成後顯示手動修改按鈕 -->
+                    <button id="ai-edit-board-btn" class="hidden">🗺️ 手動修改地圖</button>
+                </section>
+
+                <!-- STEP 2：機會 / 命運卡片 -->
+                <section class="aid-card aid-cards">
+                    <div class="aid-card-head">
+                        <span class="aid-icon">🎴</span>
+                        <div><span class="aid-step">STEP 2</span><h4>AI 機會 / 命運卡片</h4></div>
+                    </div>
+                    <label class="aid-label" for="ai-cards-theme-input">卡片主題</label>
+                    <input type="text" id="ai-cards-theme-input" placeholder="留空則沿用地圖主題">
+                    <button id="ai-generate-cards-btn">✨ 生成卡片</button>
+                    <p id="ai-cards-loading-message" class="aid-loading hidden">AI 正在生成卡片，請稍候...</p>
+                    <!-- 生成後顯示查看／編輯卡片按鈕 -->
+                    <button id="ai-edit-cards-btn" class="hidden">✏️ 查看 / 編輯卡片</button>
+                </section>
+
+                <!-- STEP 3：題庫 -->
+                <section class="aid-card aid-quiz">
+                    <div class="aid-card-head">
+                        <span class="aid-icon">📚</span>
+                        <div><span class="aid-step">STEP 3</span><h4>AI 題庫生成</h4></div>
+                    </div>
+                    <label class="aid-label" for="ai-quiz-prompt-input">題庫需求（主題、題數、標題）</label>
+                    <textarea id="ai-quiz-prompt-input" placeholder="例如：主題：台灣歷史，題數：10題，標題：台灣歷史小測驗"></textarea>
+                    <button id="ai-generate-quiz-btn">✨ 生成題庫</button>
+                    <p id="ai-quiz-loading-message" class="aid-loading hidden">AI 正在生成題庫，請稍候...</p>
+                    <!-- 已有的題庫：可勾選是否使用、👁️ 查看修改；可多次生成不同題庫 -->
+                    <div class="aid-banks">
+                        <p class="aid-label">題庫清單（勾選＝遊戲中使用，👁️ 查看修改）</p>
+                        <div id="ai-quiz-bank-list" class="space-y-1"></div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="aid-foot">
+                <button id="ai-save-progress-btn">💾 儲存生成內容進度</button>
+                <button id="ai-cancel-btn">關閉</button>
+            </div>
         </div>
         <!-- End AI Design Modal -->
 
@@ -4036,29 +4198,29 @@
                             <li>透過「AI 設計遊戲區」按鈕，讓 AI 為您生成一個全新主題的遊戲地圖！</li>
                         </ul>
                     </li>
-                    <li><b>擲骰子：</b> 輪到您的回合時，點擊「擲骰子」按鈕移動您的棋子。棋子停下後，會先顯示「玩家目前在哪一格」的大圖卡約 2 秒，再進行該格的動作。</li>
+                    <li><b>擲骰子：</b> 輪到您的回合時，點擊「擲骰子」按鈕移動您的棋子。棋子停下後，會先顯示「玩家目前在哪一格」的大圖卡約 2 秒，再進行該格的動作。擲出雙倍點數可以再擲一次，但每回合最多只能再擲一次，再擲時又擲出雙倍也會換下一位玩家。</li>
                     <li><b>土地與資產：：</b>
                         <ul>
                             <li><b>無主土地：：</b> 當您降落在無主土地上時，您可以選擇購買它。如果您資金不足或不想購買，可以放棄。</li>
-                            <li><b>有主土地：：</b> 如果您降落在其他玩家的土地上，您必須支付過路費給地主（計算方式見下方「過路費」）。</li>
-                            <li><b>房屋升級：：</b> 降落在自己已買下的土地時，可花費該土地買價的 20% 升級房屋，最多升級 2 次（每升級一次建物就加蓋一層樓，上方也會多一顆 ⭐）。車站與公用事業不能升級。</li>
+                            <li><b>有主土地：：</b> 如果您降落在其他玩家的土地上，您必須支付過路費給地主（計算方式見下方「過路費」）。<b>地主正在坐牢時，經過他的土地不用付過路費。</b></li>
+                            <li><b>房屋升級：：</b> 降落在自己已買下的土地時，可花費該土地買價的 <span data-rule="upgradeCostPct"></span>% 升級房屋，最多升級 2 次（每升級一次建物就加蓋一層樓，上方也會多一顆 ⭐）。車站與公用事業不能升級。</li>
                         </ul>
                     </li>
                     <li><b>過路費：：</b>
                         <ul>
-                            <li><b>一般土地：：</b> 基本過路費固定為該土地價格的 20%（例如價格 $1,000 的土地，過路費 $200）。</li>
-                            <li><b>同色全收集：：</b> 同一顏色的土地全部屬於同一位地主時，這些土地的過路費加倍（×2）。</li>
-                            <li><b>房屋升級：：</b> 升級 1 次過路費 ×2，升級 2 次 ×4，可與同色加倍疊加。例如 $1,000 的土地：基本 $200 → 同色全收集 $400 → 再升級 2 次 $1,600。</li>
-                            <li><b>高鐵站：：</b> 基本 $250，地主每多擁有一個高鐵站就再加倍：1 站 $250、2 站 $500、3 站 $1,000、4 站 $2,000。</li>
-                            <li><b>公用事業：：</b> 依踩到的玩家擲出的骰子點數計算，地主擁有 1 家為點數 × $40，2 家都擁有為點數 × $100。</li>
+                            <li><b>一般土地：：</b> 基本過路費為該土地價格的 <span data-rule="rentPct"></span>%。</li>
+                            <li><b>同色全收集：：</b> 同一顏色的土地全部屬於同一位地主時，這些土地的過路費 ×<span data-rule="monopolyMult"></span>。</li>
+                            <li><b>房屋升級：：</b> 每升級 1 次過路費再 ×<span data-rule="upgradeMult"></span>（升級 2 次就是乘兩次），可與同色全收集疊加。</li>
+                            <li><b>高鐵站：：</b> 基本過路費依地圖設定（預設 $250），地主每多擁有一個高鐵站就再 ×<span data-rule="stationMult"></span>。</li>
+                            <li><b>公用事業：：</b> 依踩到的玩家擲出的骰子點數計算，地主擁有 1 家為點數 × $<span data-rule="utility1"></span>，2 家都擁有為點數 × $<span data-rule="utility2"></span>。</li>
                         </ul>
                     </li>
                     <li><b>特殊格子：：</b>
                         <ul>
-                            <li><b>起點：：</b> 每次經過或停留在起點，您可以領取 $2000 的薪水。</li>
+                            <li><b>起點：：</b> 每次經過或停留在起點，您可以領取 $<span data-rule="salary"></span> 的薪水。</li>
                             <li><b>機會 / 命運：：</b> 降落在這些格子會抽取一張卡片，執行卡片上的指令，可能是獲得金錢、支付費用，或移動到特定位置。</li>
                             <li><b>監獄 / 前往監獄：：</b>
-                                降落在「監獄」格子只是「探訪」。被關進監獄的玩家，資訊卡會蓋上鐵柵欄。如果被「前往監獄」或「機會/命運」卡片送入監獄，您必須等待三個回合，或者擲出雙倍點數才能出獄。抽到「免費出獄卡」會顯示在您的資訊卡上（🎫 出獄卡 ×張數）；持有出獄卡時若被送進監獄，會自動使用一張並播放救援動畫，當場被救出、不用入獄。
+                                降落在「監獄」格子只是「探訪」。被關進監獄的玩家，資訊卡會蓋上鐵柵欄。如果被「前往監獄」或「機會/命運」卡片送入監獄，您必須在監獄待三個回合，第 4 回合自動支付保釋金 $<span data-rule="bail"></span> 出獄並照常移動。坐牢期間輪到您時仍可擲骰子，但不論擲出什麼點數都不能移動；只有擲出雙倍點數時，可以選擇支付保釋金 $<span data-rule="bail"></span> 提前出獄（下回合起才能移動）。坐牢期間，其他玩家經過您的土地不用付過路費。抽到「免費出獄卡」會顯示在您的資訊卡上（🎫 出獄卡 ×張數）；持有出獄卡時若被送進監獄，會自動使用一張並播放救援動畫，當場被救出、不用入獄。
                             </li>
                             <li><b>所得稅 / 奢侈稅：：</b> 降落在這些格子需要支付固定金額的稅金。</li>
                             <li><b>免費停車：：</b> 降落在這裡沒有任何事發生。</li>
@@ -4067,7 +4229,7 @@
                     <li><b>題庫問答：：</b>
                         <ul>
                             <li>如果您匯入了題庫並啟用，當您降落在某些未被擁有的地產、機會、命運等特定格子上時，會觸發隨機問答。</li>
-                            <li>答對題目，您可以正常執行格子動作 (例如購買地產、抽取卡片)；若該格是有價格的土地（地產、車站、公用事業），還會獲得該土地價格一半的獎金（會顯示獎金大圖卡）。</li>
+                            <li>答對題目，您可以正常執行格子動作 (例如購買地產、抽取卡片)；若該格是有價格的土地（地產、車站、公用事業），還會獲得該土地價格 <span data-rule="quizBonusPct"></span>% 的獎金（會顯示獎金大圖卡）。</li>
                             <li>答錯題目，不會獲得獎金，也無法執行該格子的動作，並直接結束回合。</li>
                         </ul>
                     </li>
@@ -4078,6 +4240,10 @@
                         </ul>
                     </li>
                 </ul>
+                <h4 class="text-lg font-bold mt-4 mb-2">⚙️ 自訂收費規則：</h4>
+                <p>修改後立即生效（遊戲進行中也會套用），並會記住設定；括號內為預設值。</p>
+                <div id="rules-form"></div>
+                <div class="text-center"><button id="rules-reset-btn" type="button">↺ 全部恢復預設值</button></div>
                 <p class="text-center font-bold mt-6">祝您遊戲愉快！</p>
             </div>
         </div>
@@ -4705,6 +4871,43 @@
         // A mutable copy of the initial board data that can be themed by AI
         let currentBoardTemplate = JSON.parse(JSON.stringify(initialBoardSpacesData));
 
+        // 自訂收費規則（玩法說明內可修改，存在 localStorage；def 為預設值）
+        const RULE_DEFS = [
+            { k: 'rentPct', label: '一般土地基本過路費', unit: '% 地價', def: 20 },
+            { k: 'monopolyMult', label: '同色全收集過路費', unit: '倍', def: 2 },
+            { k: 'upgradeMult', label: '房屋每升級一次過路費', unit: '倍', def: 2 },
+            { k: 'upgradeCostPct', label: '房屋升級費用', unit: '% 地價', def: 20 },
+            { k: 'stationMult', label: '高鐵站每多擁有一站', unit: '倍', def: 2 },
+            { k: 'utility1', label: '公用事業擁有 1 家', unit: '× 點數 $', def: 40 },
+            { k: 'utility2', label: '公用事業擁有 2 家', unit: '× 點數 $', def: 100 },
+            { k: 'salary', label: '經過起點薪水', unit: '$', def: 2000 },
+            { k: 'quizBonusPct', label: '答對題目獎金', unit: '% 地價', def: 50 },
+            { k: 'bail', label: '監獄保釋金', unit: '$', def: 500 },
+        ];
+        const rules = Object.fromEntries(RULE_DEFS.map(d => [d.k, d.def]));
+        try { Object.assign(rules, JSON.parse(localStorage.getItem('monopolyRules') || '{}')); } catch (e) { }
+        function refreshRuleTexts() {
+            document.querySelectorAll('[data-rule]').forEach(el => { el.textContent = rules[el.dataset.rule].toLocaleString(); });
+        }
+        function renderRulesForm() {
+            const form = document.getElementById('rules-form');
+            form.innerHTML = RULE_DEFS.map(d => `<label>${d.label}<span><input type="number" min="0" step="any" data-k="${d.k}" value="${rules[d.k]}"> <small>${d.unit}（${d.def}）</small></span></label>`).join('');
+            form.querySelectorAll('input').forEach(inp => inp.addEventListener('change', () => {
+                const v = parseFloat(inp.value);
+                rules[inp.dataset.k] = isFinite(v) && v >= 0 ? v : RULE_DEFS.find(d => d.k === inp.dataset.k).def;
+                inp.value = rules[inp.dataset.k];
+                try { localStorage.setItem('monopolyRules', JSON.stringify(rules)); } catch (e) { }
+                refreshRuleTexts();
+            }));
+            refreshRuleTexts();
+        }
+        renderRulesForm();
+        document.getElementById('rules-reset-btn').addEventListener('click', () => {
+            RULE_DEFS.forEach(d => { rules[d.k] = d.def; });
+            try { localStorage.removeItem('monopolyRules'); } catch (e) { }
+            renderRulesForm();
+        });
+
         const setupScreen = document.getElementById('setup-screen');
         const gameScreen = document.getElementById('game-screen');
         const playerCountSelect = document.getElementById('player-count');
@@ -4784,7 +4987,8 @@
             editCards: document.getElementById('edit-cards-modal'),
             editBoard: document.getElementById('edit-board-modal'),
             playerHistory: document.getElementById('player-history-modal'),
-            quizFormatHelp: document.getElementById('quiz-format-help-modal')
+            quizFormatHelp: document.getElementById('quiz-format-help-modal'),
+            restartSettings: document.getElementById('restart-settings-modal')
         };
 
         // Function to update the player details section on the setup screen
@@ -4926,59 +5130,62 @@
         // Render quiz bank checkboxes with new edit button
         function renderQuizBankSelection() {
             const quizBankSelectionDiv = document.getElementById('quiz-bank-selection');
-            const quizBankListDiv = document.getElementById('quiz-bank-list');
-            quizBankListDiv.innerHTML = ''; // Clear previous list
+            const hasQuizzes = Object.keys(gameState.quizzes).length > 0;
+            quizBankSelectionDiv.classList.toggle('hidden', !hasQuizzes);
+            // 設定畫面與「AI 設計遊戲區」各有一份清單，內容同步
+            [['quiz-bank-list', '請匯入 XLSX 檔案以顯示題庫。', false], ['ai-quiz-bank-list', '尚未有題庫，生成後會列在這裡。', true]].forEach(([listId, emptyText, inAIModal]) => {
+                const quizBankListDiv = document.getElementById(listId);
+                quizBankListDiv.innerHTML = ''; // Clear previous list
+                if (!hasQuizzes) {
+                    quizBankListDiv.innerHTML = `<p class="text-gray-500 text-sm">${emptyText}</p>`;
+                    return;
+                }
+                Object.keys(gameState.quizzes).forEach(bankName => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center'; // Added flex for alignment
 
-            if (Object.keys(gameState.quizzes).length === 0) {
-                quizBankListDiv.innerHTML = '<p class="text-gray-500 text-sm">請匯入 XLSX 檔案以顯示題庫。</p>';
-                quizBankSelectionDiv.classList.add('hidden');
-                return;
-            }
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `${listId}-${bankName}`;
+                    checkbox.value = bankName;
+                    checkbox.className = 'mr-2';
+                    checkbox.checked = gameState.activeQuizBanks.includes(bankName);
 
-            quizBankSelectionDiv.classList.remove('hidden');
-            Object.keys(gameState.quizzes).forEach(bankName => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center'; // Added flex for alignment
-
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = `quiz-bank-${bankName}`;
-                checkbox.value = bankName;
-                checkbox.className = 'mr-2';
-                checkbox.checked = gameState.activeQuizBanks.includes(bankName);
-
-                checkbox.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        if (!gameState.activeQuizBanks.includes(bankName)) {
-                            gameState.activeQuizBanks.push(bankName);
+                    checkbox.addEventListener('change', (e) => {
+                        if (e.target.checked) {
+                            if (!gameState.activeQuizBanks.includes(bankName)) {
+                                gameState.activeQuizBanks.push(bankName);
+                            }
+                            if (gameState.quizzes[bankName]) {
+                                gameState.availableQuizIndices[bankName] = Array.from({ length: gameState.quizzes[bankName].length }, (_, i) => i);
+                            }
+                        } else {
+                            gameState.activeQuizBanks = gameState.activeQuizBanks.filter(name => name !== bankName);
+                            delete gameState.availableQuizIndices[bankName];
                         }
-                        if (gameState.quizzes[bankName]) {
-                            gameState.availableQuizIndices[bankName] = Array.from({ length: gameState.quizzes[bankName].length }, (_, i) => i);
-                        }
-                    } else {
-                        gameState.activeQuizBanks = gameState.activeQuizBanks.filter(name => name !== bankName);
-                        delete gameState.availableQuizIndices[bankName];
-                    }
+                        renderQuizBankSelection(); // 同步另一份清單的勾選狀態
+                    });
+
+                    const label = document.createElement('label');
+                    label.htmlFor = checkbox.id;
+                    label.textContent = `${bankName} (${gameState.quizzes[bankName].length} 題)`;
+
+                    // New: Eye emoji button for editing/previewing quiz bank
+                    const editButton = document.createElement('button');
+                    editButton.className = 'edit-quiz-bank-btn';
+                    editButton.innerHTML = '👁️'; // Eye emoji
+                    editButton.title = `預覽/編輯 "${bankName}" 題庫`;
+                    editButton.addEventListener('click', (e) => {
+                        e.preventDefault(); // Prevent checkbox state change if clicked on button
+                        if (inAIModal) openEditorFromAIModal();
+                        showEditQuizModal(bankName);
+                    });
+
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    div.appendChild(editButton); // Append the new button
+                    quizBankListDiv.appendChild(div);
                 });
-
-                const label = document.createElement('label');
-                label.htmlFor = `quiz-bank-${bankName}`;
-                label.textContent = `${bankName} (${gameState.quizzes[bankName].length} 題)`;
-
-                // New: Eye emoji button for editing/previewing quiz bank
-                const editButton = document.createElement('button');
-                editButton.className = 'edit-quiz-bank-btn';
-                editButton.innerHTML = '👁️'; // Eye emoji
-                editButton.title = `預覽/編輯 "${bankName}" 題庫`;
-                editButton.addEventListener('click', (e) => {
-                    e.preventDefault(); // Prevent checkbox state change if clicked on button
-                    showEditQuizModal(bankName);
-                });
-
-                div.appendChild(checkbox);
-                div.appendChild(label);
-                div.appendChild(editButton); // Append the new button
-                quizBankListDiv.appendChild(div);
             });
         }
 
@@ -5022,7 +5229,7 @@
                     }
                     return space;
                 }),
-                dice: [0, 0],
+                dice: [0, 0], extraRollUsed: false,
                 initialMoney: money, gameMinutes: time, // 供「再來一局」沿用
                 gameEndTime: time > 0 ? Date.now() + time * 60 * 1000 : null,
                 isGameOver: false,
@@ -5031,17 +5238,58 @@
             updateScreenVisibility(); // Update button visibility after game starts
         });
 
-        // 用目前這局的設定重開：地圖（含 AI / 手動修改）、題庫、機會/命運卡、玩家名稱與棋子、起始資金、遊戲時間都沿用，
-        // 土地所有權、房屋等級、金錢、位置、監獄狀態與出獄卡全部歸零
-        function restartWithCurrentSettings() {
+        // 目前這局的起始資金與遊戲時間（舊存檔沒有記錄時，從收支紀錄或設定畫面推回）
+        function currentRoundSettings() {
             const old = gameState;
             const minutes = old.gameMinutes ?? (old.gameEndTime ? (gameTimeSelect.value === 'custom' ? parseInt(gameTimeCustom.value) : parseInt(gameTimeSelect.value)) : 0);
-            const players = old.players.map(p => {
-                const money = old.initialMoney ?? ((p.transactions || []).find(t => t.type === 'initial') || {}).amount ?? 15000;
-                const np = { id: p.id, name: p.name, emoji: p.emoji, money, position: 0, inJail: false, jailTurns: 0, getOutOfJailCards: 0, transactions: [] };
-                recordTransaction(np, money, '遊戲開始，獲得起始資金', 'initial');
-                return np;
+            const money = old.initialMoney ?? ((old.players[0].transactions || []).find(t => t.type === 'initial') || {}).amount ?? 15000;
+            return { count: old.players.length, money, minutes };
+        }
+
+        // 「再來一局」設定視窗：預設帶入目前這局的人數、資金、時間
+        function showRestartSettings() {
+            const cur = currentRoundSettings();
+            document.getElementById('rs-player-count').value = String(cur.count);
+            document.getElementById('rs-initial-money').value = cur.money;
+            document.getElementById('rs-game-minutes').value = cur.minutes;
+            Object.values(modals).forEach(m => m.classList.add('hidden'));
+            modalContainer.classList.remove('hidden');
+            modals.restartSettings.classList.remove('hidden');
+        }
+        document.getElementById('rs-start-btn').addEventListener('click', () => {
+            soundManager.playClick();
+            const cur = currentRoundSettings();
+            const money = parseInt(document.getElementById('rs-initial-money').value);
+            const minutes = parseInt(document.getElementById('rs-game-minutes').value);
+            restartWithCurrentSettings({
+                count: parseInt(document.getElementById('rs-player-count').value),
+                money: money > 0 ? money : cur.money,
+                minutes: minutes >= 0 ? minutes : cur.minutes
             });
+        });
+        document.getElementById('rs-cancel-btn').addEventListener('click', () => {
+            closeSpecificModal(modals.restartSettings);
+            if (gameState.isGameOver) { modalContainer.classList.remove('hidden'); winnerModal.classList.remove('hidden'); } // 從結算畫面進來就回到結算畫面
+        });
+
+        // 用目前這局的設定重開：地圖（含 AI / 手動修改）、題庫、機會/命運卡、玩家名稱與棋子都沿用，
+        // 玩家人數、起始資金、遊戲時間依「再來一局」視窗的設定；
+        // 土地所有權、房屋等級、金錢、位置、監獄狀態與出獄卡全部歸零
+        function restartWithCurrentSettings(opts) {
+            const old = gameState;
+            const { money, minutes } = opts;
+            const players = [];
+            for (let i = 0; i < opts.count; i++) {
+                const p = old.players[i];
+                // 增加的玩家：名稱與棋子取自設定畫面，沒有就用預設名稱與尚未被使用的棋子
+                const usedEmojis = old.players.slice(0, opts.count).map(q => q.emoji).concat(players.map(q => q.emoji));
+                const name = p ? p.name : (document.getElementById(`player-name-${i}`)?.value || `玩家 ${i + 1}`);
+                const setupEmoji = document.getElementById(`player-emoji-${i}`)?.value;
+                const emoji = p ? p.emoji : (setupEmoji && !usedEmojis.includes(setupEmoji) ? setupEmoji : availableEmojis.find(e => !usedEmojis.includes(e)));
+                const np = { id: i, name, emoji, money, position: 0, inJail: false, jailTurns: 0, getOutOfJailCards: 0, transactions: [] };
+                recordTransaction(np, money, '遊戲開始，獲得起始資金', 'initial');
+                players.push(np);
+            }
             Object.values(modals).forEach(m => m.classList.add('hidden'));
             modalContainer.classList.add('hidden');
             playerInfoContainer.classList.remove('hud-hidden');
@@ -5050,14 +5298,14 @@
                 players, currentPlayerIndex: 0,
                 board: old.board.map(space => ['property', 'station', 'utility'].includes(space.type) ? { ...space, ownerId: null, level: 0 } : space),
                 availableQuizIndices: {}, // 題目重新洗牌（initGame 會依啟用的題庫重建）
-                dice: [0, 0],
-                initialMoney: players[0].money, gameMinutes: minutes,
+                dice: [0, 0], extraRollUsed: false,
+                initialMoney: money, gameMinutes: minutes,
                 gameEndTime: minutes > 0 ? Date.now() + minutes * 60 * 1000 : null,
                 isGameOver: false
             });
-            showAIToast('已用相同設定重新開局！', 'success', 2500);
+            showAIToast(`已重新開局！${players.length} 位玩家・初始資金 $${money.toLocaleString()}・${minutes > 0 ? minutes + ' 分鐘' : '不計時'}`, 'success', 3000);
         }
-        document.getElementById('restart-same-btn').addEventListener('click', () => { soundManager.playClick(); restartWithCurrentSettings(); });
+        document.getElementById('restart-same-btn').addEventListener('click', () => { soundManager.playClick(); showRestartSettings(); });
 
         // 初始畫面：載入之前匯出的遊戲進度檔 (與遊戲中「載入進度」共用同一套匯入邏輯)
         document.getElementById('load-progress-setup-btn').addEventListener('click', importGameProgress);
@@ -5650,12 +5898,101 @@
             b3.pawns[player.id] = g;
         }
 
-        function b3Tree(group, x, z, s) {
+        function b3Tree(group, x, z, s, rnd = Math.random) {
             b3Add(group, new THREE.CylinderGeometry(0.05 * s, 0.075 * s, 0.32 * s, 7), b3Mat('#b07d56'), x, B3_LAWN_TOP + 0.16 * s, z);
-            const leaf = ['#6fcf97', '#4fbf88', '#86d9a8'][Math.floor(Math.random() * 3)];
+            const leaf = ['#6fcf97', '#4fbf88', '#86d9a8'][Math.floor(rnd() * 3)];
             const m = b3Mat(leaf, { flatShading: true, roughness: 0.8 });
             b3Add(group, new THREE.IcosahedronGeometry(0.3 * s, 0), m, x, B3_LAWN_TOP + 0.48 * s, z);
             b3Add(group, new THREE.IcosahedronGeometry(0.2 * s, 0), m, x + 0.06 * s, B3_LAWN_TOP + 0.72 * s, z - 0.04 * s);
+        }
+
+        // ---- 中央草地隨機裝飾 ----
+        // 每次開啟網頁換一組亂數種子；同一次開啟中重建棋盤（新局、破產）時裝飾維持不變
+        const B3_DECOR_SEED = Math.floor(Math.random() * 2 ** 31);
+        function b3SeededRandom(seed) { // mulberry32
+            return () => {
+                seed = (seed + 0x6D2B79F5) | 0;
+                let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+        const B3_PASTELS = ['#ffd6e0', '#ffe9b8', '#d4ecff', '#e3d9ff', '#d2f5e3', '#ffdcc2'];
+        const B3_ROOFS = ['#f47c8f', '#7aa8e8', '#f5a25d', '#9b84e0', '#5fbf8f'];
+        const b3Pick = (rnd, arr) => arr[Math.floor(rnd() * arr.length)];
+
+        // 各種裝飾（以 (0,0) 為底部中心建在子群組 d 內，s 為縮放）
+        const B3_DECOR = {
+            tree: (d, s, rnd) => b3Tree(d, 0, 0, s * (0.8 + rnd() * 0.6), rnd), // 圓樹（高矮不一）
+            pine(d, s, rnd) { // 松樹
+                const h = s * (0.8 + rnd() * 0.7), m = b3Mat(b3Pick(rnd, ['#3fa877', '#4fbf88', '#2f9468']), { flatShading: true, roughness: 0.8 });
+                b3Add(d, new THREE.CylinderGeometry(0.04 * h, 0.06 * h, 0.2 * h, 6), b3Mat('#a06f4c'), 0, B3_LAWN_TOP + 0.1 * h, 0);
+                [[0.3, 0.32, 0.36], [0.23, 0.28, 0.56], [0.15, 0.24, 0.74]].forEach(([r, ch, y]) =>
+                    b3Add(d, new THREE.ConeGeometry(r * h, ch * h, 7), m, 0, B3_LAWN_TOP + y * h, 0));
+            },
+            poplar(d, s, rnd) { // 細高的樹
+                const h = s * (0.9 + rnd() * 0.6);
+                b3Add(d, new THREE.CylinderGeometry(0.035 * h, 0.05 * h, 0.3 * h, 6), b3Mat('#b07d56'), 0, B3_LAWN_TOP + 0.15 * h, 0);
+                const crown = b3Add(d, new THREE.SphereGeometry(0.17 * h, 10, 8), b3Mat(b3Pick(rnd, ['#8fd6a0', '#6fcf97', '#b5e07a']), { flatShading: true, roughness: 0.8 }), 0, B3_LAWN_TOP + 0.62 * h, 0);
+                crown.scale.y = 2.1;
+            },
+            bush(d, s, rnd) { // 矮樹叢
+                const m = b3Mat(b3Pick(rnd, ['#6fcf97', '#86d9a8', '#5bbf86']), { flatShading: true, roughness: 0.85 });
+                for (let k = 0; k < 3; k++) b3Add(d, new THREE.IcosahedronGeometry(s * (0.11 + rnd() * 0.07), 0), m, (k - 1) * 0.13 * s, B3_LAWN_TOP + 0.08 * s, (rnd() - 0.5) * 0.12 * s);
+            },
+            flowers(d, s, rnd) { // 花圃
+                for (let k = 0; k < 6; k++) {
+                    const x = (rnd() - 0.5) * 0.4 * s, z = (rnd() - 0.5) * 0.3 * s;
+                    b3Add(d, new THREE.CylinderGeometry(0.008, 0.008, 0.1 * s, 4), b3Mat('#5bbf86'), x, B3_LAWN_TOP + 0.05 * s, z);
+                    b3Add(d, new THREE.SphereGeometry(0.04 * s, 8, 6), b3Mat(b3Pick(rnd, ['#ff8fb1', '#ffd34d', '#ffffff', '#c59bff', '#ff9f6b'])), x, B3_LAWN_TOP + 0.11 * s, z);
+                }
+            },
+            house(d, s, rnd) { // 斜屋頂小房子
+                const w = (0.42 + rnd() * 0.2) * s, dp = (0.36 + rnd() * 0.12) * s, h = (0.26 + rnd() * 0.16) * s;
+                const win = b3Mat('#fff1a8', { emissive: '#ffcf5a', emissiveIntensity: 0.45, roughness: 0.3 });
+                b3Box(d, w, h, dp, b3Mat(b3Pick(rnd, B3_PASTELS)), 0, B3_LAWN_TOP, 0);
+                b3Gable(d, w + 0.06 * s, dp + 0.08 * s, (0.18 + rnd() * 0.1) * s, b3Mat(b3Pick(rnd, B3_ROOFS), { roughness: 0.4 }), B3_LAWN_TOP + h);
+                b3Box(d, 0.08 * s, 0.14 * s, 0.01, b3Mat('#9a6448'), 0, B3_LAWN_TOP, dp / 2 + 0.003);
+                [-1, 1].forEach(k => b3Box(d, 0.07 * s, 0.07 * s, 0.01, win, k * w * 0.3, B3_LAWN_TOP + h * 0.45, dp / 2 + 0.003));
+                if (rnd() < 0.5) b3Box(d, 0.06 * s, 0.16 * s, 0.06 * s, b3Mat('#c97b63'), w * 0.25, B3_LAWN_TOP + h + 0.06 * s, -dp * 0.15); // 煙囪
+            },
+            tower(d, s, rnd) { // 高樓（高度隨機）
+                const w = (0.3 + rnd() * 0.12) * s, h = (0.7 + rnd() * 0.8) * s;
+                b3Box(d, w, h, w, b3WindowMat(3, 6, b3Pick(rnd, ['#f5ecff', '#e8f3ff', '#fff2e6'])), 0, B3_LAWN_TOP, 0);
+                b3Box(d, w + 0.04 * s, 0.04 * s, w + 0.04 * s, b3Mat(b3Pick(rnd, B3_ROOFS)), 0, B3_LAWN_TOP + h, 0);
+                if (rnd() < 0.6) b3Add(d, new THREE.CylinderGeometry(0.01, 0.01, 0.22 * s, 4), b3Mat('#9aa5b1'), 0, B3_LAWN_TOP + h + 0.15 * s, 0);
+            },
+            lamp(d, s) { // 路燈
+                b3Add(d, new THREE.CylinderGeometry(0.018 * s, 0.025 * s, 0.5 * s, 6), b3Mat('#6b7083'), 0, B3_LAWN_TOP + 0.25 * s, 0);
+                b3Add(d, new THREE.SphereGeometry(0.06 * s, 10, 8), b3Mat('#fff6c8', { emissive: '#ffd96b', emissiveIntensity: 0.8 }), 0, B3_LAWN_TOP + 0.53 * s, 0);
+            }
+        };
+
+        // 在草地空白區隨機擺放裝飾（避開標題、中央骰子廣場與兩副牌）
+        function b3Decorate(g) {
+            const rnd = b3SeededRandom(B3_DECOR_SEED);
+            const ALL = Object.keys(B3_DECOR), LOW = ['bush', 'flowers', 'lamp', 'tree', 'house'];
+            // [x0, x1, z0, z1, 數量, 可用種類]；鏡頭在 +z 側，前方（+z 中段）只放矮的
+            const zones = [
+                [2.95, 4.25, 2.95, 4.25, 3, ALL], [-4.25, -2.95, 2.95, 4.25, 3, ALL],
+                [2.95, 4.25, -4.25, -2.95, 3, ALL], [-4.25, -2.95, -4.25, -2.95, 3, ALL],
+                [3.55, 4.25, -1.6, 2.3, 2, ALL], [-4.25, -3.55, -1.6, 2.3, 2, ALL],
+                [-2.5, 2.5, -4.25, -3.3, 3, ALL],
+                [-2.2, 2.2, 3.15, 4.2, 3, LOW]
+            ];
+            const placed = [];
+            zones.forEach(([x0, x1, z0, z1, n, kinds]) => {
+                for (let k = 0, tries = 0; k < n && tries < 40; tries++) {
+                    const x = x0 + rnd() * (x1 - x0), z = z0 + rnd() * (z1 - z0);
+                    if (placed.some(p => Math.hypot(p[0] - x, p[1] - z) < 0.6)) continue;
+                    placed.push([x, z]); k++;
+                    const d = new THREE.Group();
+                    d.position.set(x, 0, z);
+                    d.rotation.y = (rnd() - 0.5) * 1.2;
+                    g.add(d);
+                    B3_DECOR[b3Pick(rnd, kinds)](d, 0.9 + rnd() * 0.4, rnd);
+                }
+            });
         }
 
         function b3CardDeck(group, type, x, z, rotY) {
@@ -5759,12 +6096,8 @@
             b3Add(g, b3RoundedSlab(lawnSize, lawnSize, B3_LAWN_TOP, 0.3, lawnBevel),
                 [new THREE.MeshStandardMaterial({ map: lawnTex, roughness: 0.9 }), b3Mat('#7fcfa0', { roughness: 0.9 })]);
 
-            // 裝飾：樹木與機會/命運牌堆
-            [[-3.75, -3.75], [3.75, -3.75], [-3.75, 3.75], [3.75, 3.75]].forEach(([x, z]) => {
-                b3Tree(g, x, z, 1.15);
-                b3Tree(g, x - Math.sign(x) * 0.7, z + 0.05, 0.8);
-                b3Tree(g, x + 0.05, z - Math.sign(z) * 0.7, 0.9);
-            });
+            // 裝飾：隨機房子、樹木等，以及機會/命運牌堆
+            b3Decorate(g);
             b3CardDeck(g, 'chance', -2.75, 1.25, 0.32);
             b3CardDeck(g, 'destiny', 2.75, 1.25, -0.32);
 
@@ -6065,7 +6398,7 @@
             document.getElementById('roll-dice-btn').addEventListener('click', rollDice);
             document.getElementById('reset-game-btn').addEventListener('click', () => showConfirm("確定要重置遊戲嗎？所有進度將會遺失。", () => { localStorage.removeItem('monopoly_save_game'); location.reload(); }));
             document.getElementById('end-game-btn').addEventListener('click', () => showConfirm("確定要結束遊戲嗎？將會結算成績。", () => endGame()));
-            document.getElementById('restart-game-btn').addEventListener('click', () => showConfirm("確定要用目前的設定（地圖、題庫、機會/命運卡、起始資金、遊戲時間）重新開一局嗎？目前進度將會遺失。", restartWithCurrentSettings));
+            document.getElementById('restart-game-btn').addEventListener('click', showRestartSettings);
             document.getElementById('sound-toggle-btn').addEventListener('click', () => soundManager.toggleSound());
             document.getElementById('bgm-toggle-btn').addEventListener('click', () => soundManager.toggleBGM());
             document.getElementById('reset-view-btn').addEventListener('click', () => { if (b3) { b3.viewTarget = { ...B3_DEFAULT_VIEW }; b3.follow = true; } });
@@ -6362,7 +6695,9 @@
         // or if no quiz was required/relevant for that space.
         function endTurn(validActionTaken = true) {
             // If doubles, and the action was valid (or no quiz was involved), allow another roll.
-            if (gameState.dice[0] === gameState.dice[1] && validActionTaken) {
+            // 每回合最多只能因雙倍點數再擲一次（再擲時又擲出雙倍，也直接換人）
+            if (gameState.dice[0] === gameState.dice[1] && validActionTaken && !gameState.extraRollUsed) {
+                gameState.extraRollUsed = true;
                 showMessage('你擲出了雙倍點數，可以再擲一次！', () => {
                     document.getElementById('roll-dice-btn').disabled = false;
                     updateGameMessage(`輪到 ${gameState.players[gameState.currentPlayerIndex].name} ${gameState.players[gameState.currentPlayerIndex].emoji}`);
@@ -6377,6 +6712,7 @@
 
         // Switch to the next player's turn
         function switchPlayer() {
+            gameState.extraRollUsed = false; // 換人時重置「已因雙倍再擲過」
             gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
             // Skip bankrupt players only if there are still active players left
             const activePlayers = gameState.players.filter(p => p.money >= 0);
@@ -6622,7 +6958,7 @@
 
         // 答對題目的獎金大圖卡
         function showQuizBonusCard(player, space, bonus, onDone) {
-            showBigCard(player, `🎉 ${player.name} 答對了！獲得獎金`, '🧠', `+$${bonus.toLocaleString()}`, `「${space.name}」地價 $${space.price.toLocaleString()} 的一半`, onDone);
+            showBigCard(player, `🎉 ${player.name} 答對了！獲得獎金`, '🧠', `+$${bonus.toLocaleString()}`, `「${space.name}」地價 $${space.price.toLocaleString()} 的 ${rules.quizBonusPct}%`, onDone);
         }
 
         // 大圖卡共用外觀：頭像、說明、大字、資訊膠囊，2 秒後（或點擊）關閉
@@ -6767,14 +7103,21 @@
         // Move the player step by step
         async function movePlayer(steps) {
             const player = gameState.players[gameState.currentPlayerIndex];
-            if (player.inJail) {
-                if (gameState.dice[0] === gameState.dice[1]) {
-                    player.inJail = false;
-                    player.jailTurns = 0;
-                    soundManager.playGetOutOfJail();
-                    showMessage("擲出雙倍！你自由了！", () => movePlayer(steps)); // Recurse move for double
+            if (player.inJail) { // 坐牢中：不論點數都不能移動；擲出雙倍才可選擇付保釋金提前出獄
+                if (gameState.dice[0] !== gameState.dice[1]) {
+                    showMessage('沒有擲出雙倍點數，繼續待在監獄（這回合不能移動）。', switchPlayer);
+                } else if (player.money < rules.bail) {
+                    showMessage(`擲出雙倍點數，但資金不足 $${rules.bail}，無法支付保釋金。`, switchPlayer);
                 } else {
-                    showMessage("在監獄中，擲骰失敗。", () => endTurn(false)); // Lost turn in jail
+                    showConfirm(`擲出雙倍點數！要支付保釋金 $${rules.bail} 提前出獄嗎？（這回合仍不能移動）`, () => {
+                        applyMoneyChange(player, -rules.bail, '監獄保釋金（擲出雙倍提前出獄）', 'jail');
+                        player.inJail = false;
+                        player.jailTurns = 0;
+                        soundManager.playGetOutOfJail();
+                        updateJailStatusDisplay();
+                        drawPlayerInfo();
+                        showMessage('已支付保釋金，成功出獄！下回合起就能正常移動。', switchPlayer);
+                    }, switchPlayer);
                 }
                 return;
             }
@@ -6787,10 +7130,10 @@
             }
             // Check if player passed Go (start)
             if (player.position < oldPosition) {
-                applyMoneyChange(player, 2000, '經過「起點」，領取薪水', 'salary');
+                applyMoneyChange(player, rules.salary, '經過「起點」，領取薪水', 'salary');
                 drawPlayerInfo();
                 soundManager.playPassGo();
-                showAIToast('經過「起點」，領取薪水 $2000！', 'success', 3000);
+                showAIToast(`經過「起點」，領取薪水 $${rules.salary}！`, 'success', 3000);
             }
             setTimeout(() => showLandingCard(player, gameState.board[player.position], () => handleSpaceAction(player.position, true)), 200); // Pass true to indicate first land on space
         }
@@ -6829,7 +7172,7 @@
                     } else if (space.ownerId !== player.id) {
                         payRent(space, position); // Owned by another player, pay rent. This will call endTurn().
                     } else if (space.type === 'property' && (space.level || 0) < 2) {
-                        offerUpgrade(space, position); // 自己的土地：可花地價 20% 升級房屋（最多 2 次）
+                        offerUpgrade(space, position); // 自己的土地：可花地價 rules.upgradeCostPct% 升級房屋（最多 2 次）
                     } else { // Owned by current player
                         endTurn(true); // Do nothing, just end turn (valid action)
                     }
@@ -6936,7 +7279,7 @@
                             // 答對：獲得該土地價格一半的獎金（沒有地價的格子不發獎金）
                             const player = gameState.players[gameState.currentPlayerIndex];
                             if (space.price) {
-                                const bonus = Math.round(space.price / 2);
+                                const bonus = Math.round(space.price * rules.quizBonusPct / 100);
                                 applyMoneyChange(player, bonus, `答對題目獎金（${space.name}）`, 'quiz_bonus');
                                 drawPlayerInfo();
                                 showQuizBonusCard(player, space, bonus, () => performSpaceActionAfterQuiz(space, position));
@@ -6967,10 +7310,10 @@
             quizModal.classList.remove('hidden');
         }
 
-        // 房屋升級：花地價 20%，過路費第 1 級 ×2、第 2 級 ×4；每升一級建物加蓋一層樓
+        // 房屋升級：花地價 rules.upgradeCostPct%，過路費每級 ×rules.upgradeMult；每升一級建物加蓋一層樓
         function offerUpgrade(space, position) {
             const player = gameState.players[gameState.currentPlayerIndex];
-            const cost = Math.round(space.price * 0.2);
+            const cost = Math.round(space.price * rules.upgradeCostPct / 100);
             const next = (space.level || 0) + 1;
             if (player.money < cost) {
                 showMessage(`升級 ${space.name} 需要 $${cost}，資金不足。`, () => endTurn(true));
@@ -6986,33 +7329,37 @@
             }, () => endTurn(true));
         }
 
-        // 一般土地過路費：地價 20%；同色土地全被同一地主收集 ×2；房屋升級每級再 ×2
+        // 一般土地過路費：地價 rules.rentPct%；同色全收集 ×rules.monopolyMult；房屋升級每級再 ×rules.upgradeMult
         // （直接由地價計算，舊存檔或 AI / 手動修改過的地圖也一律適用）
         function propertyRentInfo(space, level = space.level || 0) {
-            const base = Math.round(space.price * 0.2);
+            const base = Math.round(space.price * rules.rentPct / 100);
             const monopoly = !!space.group && space.ownerId !== null && space.ownerId !== undefined &&
                 gameState.board.filter(s => s.type === 'property' && s.group === space.group).every(s => s.ownerId === space.ownerId);
-            return { base, monopoly, rent: base * (monopoly ? 2 : 1) * 2 ** level };
+            return { base, monopoly, rent: Math.round(base * (monopoly ? rules.monopolyMult : 1) * rules.upgradeMult ** level) };
         }
 
         // Calculate and pay rent
         function payRent(space, position) {
             const owner = gameState.players.find(p => p.id === space.ownerId);
             if (!owner) { endTurn(true); return; }
+            if (owner.inJail) { // 地主坐牢中：不收過路費
+                showMessage(`${owner.name} 正在坐牢，經過 ${space.name} 不用付過路費！`, () => endTurn(true));
+                return;
+            }
             let rent = 0, detail = '';
             if (space.type === 'property') {
                 const info = propertyRentInfo(space);
                 rent = info.rent;
-                detail = `（地價 20% $${info.base}${info.monopoly ? '・同色全收集 ×2' : ''}${space.level ? `・房屋升級 ×${2 ** space.level}` : ''}）`;
+                detail = `（地價 ${rules.rentPct}% $${info.base}${info.monopoly ? `・同色全收集 ×${rules.monopolyMult}` : ''}${space.level ? `・房屋升級 ×${+(rules.upgradeMult ** space.level).toFixed(2)}` : ''}）`;
             }
             else if (space.type === 'station') {
                 // Rent for stations increases based on how many stations the owner has
                 const count = gameState.board.filter(s => s.type === 'station' && s.ownerId === owner.id).length;
-                rent = space.rent * Math.pow(2, count - 1);
+                rent = Math.round(space.rent * Math.pow(rules.stationMult, count - 1));
             } else if (space.type === 'utility') {
                 // Rent for utilities depends on dice roll and number of utilities owned
                 const count = gameState.board.filter(s => s.type === 'utility' && s.ownerId === owner.id).length;
-                rent = (gameState.dice[0] + gameState.dice[1]) * (count === 1 ? 40 : 100);
+                rent = Math.round((gameState.dice[0] + gameState.dice[1]) * (count === 1 ? rules.utility1 : rules.utility2));
             }
             const player = gameState.players[gameState.currentPlayerIndex];
             applyMoneyChange(player, -rent, `支付租金給 ${owner.name}（${space.name}）`, 'rent_expense', owner.id);
@@ -7050,17 +7397,17 @@
                 player.inJail = false;
                 player.jailTurns = 0;
                 soundManager.playGetOutOfJail();
-                showMessage(`使用了「免費出獄卡」，可以再擲一次！`, () => { updateJailStatusDisplay(); endTurn(true); }); // Valid action, player can roll again
+                showMessage(`使用了「免費出獄卡」，可以擲骰子移動了！`, () => { updateJailStatusDisplay(); }); // 出獄後本回合照常擲骰（擲骰按鈕已由 switchPlayer 開啟）
             } else if (player.jailTurns > 3) {
                 // After 3 turns, pay bail
-                applyMoneyChange(player, -500, '監獄保釋金', 'jail');
+                applyMoneyChange(player, -rules.bail, '監獄保釋金', 'jail');
                 player.inJail = false;
                 player.jailTurns = 0;
                 soundManager.playGetOutOfJail();
-                showMessage(`已在監獄待3回合，支付 $500 保釋金。`, () => { updateJailStatusDisplay(); drawPlayerInfo(); endTurn(true); }); // Valid action, player can roll again
+                showMessage(`已在監獄待3回合，支付 $${rules.bail} 保釋金出獄，可以擲骰子移動了！`, () => { updateJailStatusDisplay(); drawPlayerInfo(); }); // 出獄後本回合照常擲骰
             } else {
-                // Still in jail, skip turn
-                showMessage(`你在監獄中，還剩下 ${4 - player.jailTurns} 回合。`, switchPlayer); // Invalid action, skip to next player
+                // 仍在監獄：可以擲骰，但不能移動（結果在 movePlayer 處理）
+                showMessage(`你在監獄中（第 ${player.jailTurns} / 3 回合）。可以擲骰子，但不論點數都不能移動；擲出雙倍點數可支付保釋金 $${rules.bail} 提前出獄。`);
             }
             saveGameState();
         }
@@ -7082,14 +7429,14 @@
             switch (card.action) {
                 case 'money': applyMoneyChange(player, card.amount, card.text, 'card'); drawPlayerInfo(); endTurn(true); break;
                 // For move actions from cards, we don't trigger quiz again, pass isFirstLand = false
-                case 'move': player.position = card.position; if (player.position === 0) applyMoneyChange(player, 2000, '經過「起點」，領取薪水', 'salary'); updatePlayerPawns(); handleSpaceAction(player.position, false); break;
+                case 'move': player.position = card.position; if (player.position === 0) applyMoneyChange(player, rules.salary, '經過「起點」，領取薪水', 'salary'); updatePlayerPawns(); handleSpaceAction(player.position, false); break;
                 case 'moveRelative': // For relative move actions from cards, we don't trigger quiz again
                     const oldPosForRelativeMove = player.position;
                     player.position = (player.position + card.amount) % gameState.board.length;
                     if (player.position < oldPosForRelativeMove && card.amount > 0) { // Check if passed Go
-                        applyMoneyChange(player, 2000, '經過「起點」，領取薪水', 'salary');
+                        applyMoneyChange(player, rules.salary, '經過「起點」，領取薪水', 'salary');
                         drawPlayerInfo();
-                        showAIToast('經過「起點」，領取薪水 $2000！', 'success', 3000);
+                        showAIToast(`經過「起點」，領取薪水 $${rules.salary}！`, 'success', 3000);
                     }
                     updatePlayerPawns();
                     handleSpaceAction(player.position, false); // No quiz after card move
@@ -7337,8 +7684,19 @@
         }
 
         // Closes a specific modal and manages the overall modal container visibility
+        // 從「AI 設計遊戲區」打開題庫 / 卡片編輯時，先收起 AI 圖層，編輯完（儲存或取消）再回到 AI 圖層
+        let reopenAIAfterEdit = false;
+        function openEditorFromAIModal() {
+            reopenAIAfterEdit = true;
+            aiDesignModal.classList.add('hidden');
+        }
+
         function closeSpecificModal(modalElement) {
             modalElement.classList.add('hidden');
+            if (reopenAIAfterEdit && (modalElement === modals.editQuiz || modalElement === modals.editCards)) {
+                reopenAIAfterEdit = false;
+                aiDesignModal.classList.remove('hidden');
+            }
             // Only hide the main container if no other modals are active
             if (!anyModalActive()) {
                 modalContainer.classList.add('hidden');
@@ -7405,14 +7763,14 @@
         }
 
         // --- Export/Import Game Functions ---
-        document.getElementById('export-game-btn').addEventListener('click', exportGameProgress);
+        document.getElementById('export-game-btn').addEventListener('click', () => exportGameProgress());
         document.getElementById('import-game-btn').addEventListener('click', importGameProgress);
 
-        function exportGameProgress() {
+        function exportGameProgress(state = gameState) {
             try {
                 // Save the entire gameState object including current gameTitle and the full board.
                 // The board array within gameState already contains the themed names/prices if AI was used.
-                const jsonString = JSON.stringify(gameState, null, 2); // Prettify JSON for readability
+                const jsonString = JSON.stringify(state, null, 2); // Prettify JSON for readability
                 const blob = new Blob([jsonString], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -7491,6 +7849,39 @@
         aiGenerateQuizBtn.addEventListener('click', generateAIQuiz); // Event listener for quiz generation
         aiCancelBtn.addEventListener('click', () => closeSpecificModal(aiDesignModal));
 
+        // 生成卡片後：查看 / 編輯卡片
+        document.getElementById('ai-edit-cards-btn').addEventListener('click', () => {
+            openEditorFromAIModal();
+            showEditCardsModal();
+        });
+
+        // 儲存生成內容進度：輸出和「匯出進度」相同格式的檔案。
+        // 已因生成地圖而開局時直接存目前進度；否則用設定畫面的玩家、起始資金、遊戲時間與目前地圖組成一局新遊戲。
+        document.getElementById('ai-save-progress-btn').addEventListener('click', () => {
+            if (gameState.players && gameState.players.length && gameState.board) { exportGameProgress(); return; }
+            const money = initialMoneySelect.value === 'custom' ? parseInt(initialMoneyCustom.value) || 15000 : parseInt(initialMoneySelect.value);
+            const time = gameTimeSelect.value === 'custom' ? parseInt(gameTimeCustom.value) : parseInt(gameTimeSelect.value);
+            const players = [];
+            for (let i = 0; i < parseInt(playerCountSelect.value); i++) {
+                const p = {
+                    id: i, name: document.getElementById(`player-name-${i}`).value || `玩家 ${i + 1}`,
+                    emoji: document.getElementById(`player-emoji-${i}`).value, money,
+                    position: 0, inJail: false, jailTurns: 0, getOutOfJailCards: 0, transactions: []
+                };
+                recordTransaction(p, money, '遊戲開始，獲得起始資金', 'initial');
+                players.push(p);
+            }
+            exportGameProgress({
+                ...gameState,
+                players, currentPlayerIndex: 0,
+                board: currentBoardTemplate.map(space => ['property', 'station', 'utility'].includes(space.type) ? { ...space, ownerId: null } : space),
+                dice: [0, 0], extraRollUsed: false,
+                initialMoney: money, gameMinutes: time,
+                gameEndTime: time > 0 ? Date.now() + time * 60 * 1000 : null,
+                isGameOver: false
+            });
+        });
+
         // New: AI Model Selection Logic
         aiModelSelect.addEventListener('change', () => {
             geminiApiKeyInputGroup.classList.add('hidden');
@@ -7567,6 +7958,8 @@
             document.getElementById('ai-cards-theme-input').value = '';
             document.getElementById('ai-cards-loading-message').classList.add('hidden');
             document.getElementById('ai-generate-cards-btn').disabled = false;
+            document.getElementById('ai-edit-cards-btn').classList.add('hidden'); // 生成卡片後才顯示
+            renderQuizBankSelection(); // 列出目前已有的題庫
 
             // Reset AI model selection to default
             aiModelSelect.value = 'gemini-current-account';
@@ -7875,7 +8268,10 @@
                 }
 
                 if (aiData.questions && aiData.questions.length > 0) {
-                    const newQuizBankName = aiData.quizTitle || `AI 生成題庫 - ${new Date().toLocaleTimeString('zh-TW')}`;
+                    const baseName = aiData.quizTitle || `AI 生成題庫 - ${new Date().toLocaleTimeString('zh-TW')}`;
+                    let newQuizBankName = baseName; // 同名時加上編號，多次生成不會互相覆蓋
+                    for (let n = 2; gameState.quizzes[newQuizBankName]; n++) newQuizBankName = `${baseName} (${n})`;
+                    if (!gameState.activeQuizBanks.includes(newQuizBankName)) gameState.activeQuizBanks.push(newQuizBankName); // 新題庫預設勾選使用
                     gameState.quizzes[newQuizBankName] = aiData.questions.map(q => ({
                         question: q.question,
                         options: q.options,
@@ -7931,7 +8327,7 @@
                         // Make sure space.price is original here before calculation for ratio, or use a fixed ratio
                         // Let's use a simplified rent adjustment based on a general range for properties, or a fixed increase for stations/utilities
                         if (space.type === 'property') {
-                            space.rent = Math.round(newPrice * 0.2); // 一般土地過路費 = 地價 20%
+                            space.rent = Math.round(newPrice * rules.rentPct / 100); // 一般土地過路費 = 地價 rules.rentPct%
                         } else if (space.type === 'station') {
                             // Stations usually have fixed base rent, multiplier scales. Let's keep original base rent for stations.
                             // If AI changes station price, it doesn't change base rent structure.
@@ -7973,7 +8369,7 @@
                     }
                     return space;
                 }),
-                dice: [0, 0],
+                dice: [0, 0], extraRollUsed: false,
                 initialMoney: initialMoney, gameMinutes: gameTime, // 供「再來一局」沿用
                 gameEndTime: gameTime > 0 ? Date.now() + gameTime * 60 * 1000 : null,
                 isGameOver: false,
@@ -8012,7 +8408,7 @@
                 rentLabel.textContent = `租: $${space.rent || '-'}`;
                 priceInput.addEventListener('input', () => {
                     const np = parseInt(priceInput.value) || 0;
-                    const nr = space.type === 'property' ? Math.round(np * 0.2) : (space.rent || 0);
+                    const nr = space.type === 'property' ? Math.round(np * rules.rentPct / 100) : (space.rent || 0);
                     rentLabel.textContent = `租: $${nr}`;
                 });
                 row.appendChild(badge); row.appendChild(nameInput); row.appendChild(priceInput); row.appendChild(rentLabel);
@@ -8033,7 +8429,7 @@
                 if (!isNaN(newPrice) && newPrice > 0) {
                     currentBoardTemplate[idx].price = Math.round(newPrice / 100) * 100;
                     if (currentBoardTemplate[idx].type === 'property')
-                        currentBoardTemplate[idx].rent = Math.round(currentBoardTemplate[idx].price * 0.2);
+                        currentBoardTemplate[idx].rent = Math.round(currentBoardTemplate[idx].price * rules.rentPct / 100);
                 }
             });
             closeSpecificModal(modals.editBoard);
@@ -8240,6 +8636,7 @@
                 if (aiData.chanceCards?.length && aiData.destinyCards?.length) {
                     gameState.chanceCards = aiData.chanceCards;
                     gameState.destinyCards = aiData.destinyCards;
+                    document.getElementById('ai-edit-cards-btn').classList.remove('hidden');
                     showAIToast(`卡片生成完成！機會 ${aiData.chanceCards.length} 張，命運 ${aiData.destinyCards.length} 張。`, 'success', 3000);
                 } else {
                     throw new Error('AI 未能生成有效卡片。');
